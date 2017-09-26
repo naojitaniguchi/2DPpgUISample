@@ -17,6 +17,11 @@ public class Player : MonoBehaviour {
 
     Dictionary<string, GameObject> encountDic;
 
+    bool upPushed = false;
+    bool downPushed = false;
+    bool leftPushed = false;
+    bool rightPushed = false;
+
 
     // Use this for initialization
     void Start () {
@@ -64,6 +69,31 @@ public class Player : MonoBehaviour {
             lastMoveTime = Time.time;
         }
 
+        if (upPushed)
+        {
+            gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.up * speed;
+            GetComponent<Animator>().SetInteger("Direction", 1);
+            lastMoveTime = Time.time;
+        }
+        if (downPushed)
+        {
+            gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.up * (-1.0f * speed);
+            GetComponent<Animator>().SetInteger("Direction", 2);
+            lastMoveTime = Time.time;
+        }
+        if (rightPushed)
+        {
+            gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.right * speed;
+            GetComponent<Animator>().SetInteger("Direction", 3);
+            lastMoveTime = Time.time;
+        }
+        if (leftPushed)
+        {
+            gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.right * (-1.0f * speed);
+            GetComponent<Animator>().SetInteger("Direction", 4);
+            lastMoveTime = Time.time;
+        }
+
         if (this.transform.position == lastPosition && ( Time.time - lastMoveTime ) >  0.1f )
         {
             GetComponent<Animator>().SetInteger("Direction", 0);
@@ -96,6 +126,34 @@ public class Player : MonoBehaviour {
         }
 
         lastEncount = collider.gameObject.tag;
+    }
+
+    public void upButtonPushed()
+    {
+        upPushed = true;
+    }
+
+    public void downButtonPushed()
+    {
+        downPushed = true;
+    }
+
+    public void leftButtonPushed()
+    {
+        leftPushed = true;
+    }
+
+    public void rightButtonPushed()
+    {
+        rightPushed = true;
+    }
+
+    public void buttonUpped()
+    {
+        upPushed = false;
+        downPushed = false;
+        leftPushed = false;
+        rightPushed = false;
     }
 
 }
