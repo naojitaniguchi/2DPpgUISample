@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour {
     public float speed;
     private Vector3 lastPosition;
     float lastMoveTime;
-    public GameObject[] encountCharactors;
 
     [System.NonSerialized]
     public bool talking = false;
@@ -14,8 +14,9 @@ public class Player : MonoBehaviour {
     public GameObject speechObject ;
 
     string lastEncount = "";
+    private List<string> items;
 
-    Dictionary<string, GameObject> encountDic;
+    public string nextScene;
 
     bool upPushed = false;
     bool downPushed = false;
@@ -26,13 +27,8 @@ public class Player : MonoBehaviour {
     // Use this for initialization
     void Start () {
         lastPosition = transform.position;
+        items = new List<string>();
 
-        encountDic = new Dictionary<string, GameObject>();
-
-        foreach ( GameObject g in encountCharactors)
-        {
-            encountDic.Add(g.tag, g);
-        }
     }
 	
 	// Update is called once per frame
@@ -103,29 +99,77 @@ public class Player : MonoBehaviour {
         lastPosition = transform.position;
     }
 
-
-    void OnCollisionEnter2D(Collision2D collider)
+    void dispItem(GameObject triggerObjct)
     {
-        Debug.Log(collider.gameObject.tag);
-
-        GameObject go = encountDic[collider.gameObject.tag];
+        GameObject go = triggerObjct.GetComponent<ItemStart>().ItemObject;
         if ( go == null)
         {
             return;
         }
-        go.SetActive(true);
 
-        if (lastEncount != collider.gameObject.tag)
+        if ( go.activeSelf)
+        {
+            return;
+        }
+        go.SetActive(true);
+        speechObject.SetActive(true);
+        speechObject.GetComponent<Speech>().startSpeech(go.GetComponent<Item>().sentences);
+        talking = true;
+
+        items.Add(go.name);
+
+    }
+    void dispEncount(GameObject triggerObjct)
+    {
+        GameObject go = triggerObjct.GetComponent<EncountStart>().EncountObject;
+        if (go == null)
+        {
+            return;
+        }
+
+
+        if (lastEncount != go.name)
         {
             if (talking == false)
             {
+                go.SetActive(true);
                 speechObject.SetActive(true);
                 speechObject.GetComponent<Speech>().startSpeech(go.GetComponent<Encounter>().sentences);
                 talking = true;
             }
         }
 
-        lastEncount = collider.gameObject.tag;
+        lastEncount = go.name;
+
+    }
+
+    bool checkHasKey()
+    {
+        return items.Contains("key");
+    }
+
+
+    void OnCollisionEnter2D(Collision2D collider)
+    {
+        Debug.Log(collider.gameObject.tag);
+
+        if (collider.gameObject.tag == "ItemTrigger")
+        {
+            dispItem(collider.gameObject);
+        }
+        
+        if ( collider.gameObject.tag == "EncountTrigger")
+        {
+            dispEncount(collider.gameObject);
+        }
+        if (collider.gameObject.tag == "ExitTrigger")
+        {
+            if (checkHasKey())
+            {
+                SceneManager.LoadScene(nextScene);
+            }
+        }
+
     }
 
     public void upButtonPushed()
